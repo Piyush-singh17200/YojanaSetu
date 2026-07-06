@@ -71,6 +71,68 @@ function AnimatedCounter({ target, suffix = "", duration = 1.2 }) {
   return <span ref={ref}>{count.toLocaleString("en-IN")}{suffix}</span>;
 }
 
+// Interactive preview simulation widget
+function InteractiveShowcase() {
+  const [profileStep, setProfileStep] = useState(0);
+  const steps = [
+    { key: "basics", icon: "🎓", label: "Profile Details", val: "22yo Female Student from UP" },
+    { key: "income", icon: "💰", label: "Income & Caste", val: "Family income < ₹2.5L • OBC" },
+    { key: "match", icon: "✨", label: "Matched Benefit", val: "NSP Scholarship Matched (95% fit)" }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProfileStep((s) => (s + 1) % steps.length);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="rounded-3xl border border-line bg-white p-6 shadow-xl relative overflow-hidden select-none">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none" />
+      <div className="flex items-center justify-between border-b border-line/60 pb-3.5 mb-4">
+        <span className="text-xs font-black text-ink flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-success animate-pulse" />
+          YojanaSetu Matcher Demo
+        </span>
+        <span className="text-[10px] font-extrabold text-slate-400 bg-slate-100 rounded-full px-2.5 py-1">Live Engine</span>
+      </div>
+
+      <div className="space-y-3.5">
+        {steps.map((st, i) => {
+          const isActive = profileStep === i;
+          return (
+            <motion.div
+              key={st.key}
+              animate={{
+                scale: isActive ? 1.02 : 1,
+                opacity: profileStep >= i ? 1 : 0.4
+              }}
+              transition={{ type: "spring", stiffness: 350, damping: 22 }}
+              className={`flex items-center gap-3.5 rounded-2xl border p-4 transition-all duration-300 ${
+                isActive 
+                  ? "border-primary bg-primaryTint/20 shadow-sm" 
+                  : "border-line bg-slate-50/50"
+              }`}
+            >
+              <span className="text-xl shrink-0">{st.icon}</span>
+              <div className="flex-1">
+                <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">{st.label}</span>
+                <p className="text-xs font-extrabold text-ink mt-0.5">{st.val}</p>
+              </div>
+              {isActive && (
+                <span className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-white shrink-0">
+                  <CheckCircle2 size={12} />
+                </span>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Landing() {
   const navigate = useNavigate();
   const { categories } = useSchemeContext();

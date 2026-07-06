@@ -1,4 +1,4 @@
-const { GoogleGenAI } = require("@google/generative-ai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Helper to interact with Gemini API
 async function queryAssistant(userMessage, userProfile = {}, allSchemes = []) {
@@ -33,7 +33,7 @@ Keep your response professional, structured, and easy to read. Use bullet points
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenerativeAI(apiKey);
     const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -74,7 +74,8 @@ function fallbackResponse(msg, profile, schemes) {
   if (matches.length > 0) {
     let response = `Based on your request, I found some relevant schemes you may qualify for:\n\n`;
     matches.forEach((s) => {
-      response += `*   **${s.name}**: Offers ${s.benefit}. Eligibility: ${JSON.parse(s.eligibility).slice(0,2).join(", ")}.\n`;
+      const eligArr = Array.isArray(s.eligibility) ? s.eligibility : JSON.parse(s.eligibility || "[]");
+      response += `*   **${s.name}**: Offers ${s.benefit}. Eligibility: ${eligArr.slice(0, 2).join(", ")}.\n`;
     });
     response += `\nGo to the Schemes tab to view the complete details and print your required document checklists!`;
     return response;
