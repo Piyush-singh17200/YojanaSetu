@@ -181,3 +181,56 @@ export function NotFoundState() {
     </motion.div>
   );
 }
+
+// 7. Card Grid Skeleton Loader
+export function CardSkeleton() {
+  return (
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="animate-pulse rounded-3xl border border-line bg-white p-6 space-y-4 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div className="h-5 w-24 rounded-full bg-slate-200" />
+            <div className="h-10 w-10 rounded-full bg-slate-200" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-5 w-3/4 rounded bg-slate-200" />
+            <div className="h-3.5 w-1/2 rounded bg-slate-200" />
+          </div>
+          <div className="h-12 w-full rounded-2xl bg-slate-100" />
+          <div className="flex items-center justify-between border-t border-slate-100/50 pt-4">
+            <div className="h-4 w-20 rounded bg-slate-200" />
+            <div className="h-4 w-12 rounded bg-slate-200" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// 8. Detail View Skeleton Loader
+export function DetailSkeleton() {
+  return (
+    <div className="animate-pulse space-y-6 py-2">
+      <div className="rounded-3xl border border-line bg-white p-6 sm:p-8 space-y-6 shadow-sm">
+        <div className="flex justify-between items-start">
+          <div className="space-y-3 flex-1">
+            <div className="h-5 w-20 rounded-full bg-slate-200" />
+            <div className="h-8 w-3/4 rounded bg-slate-200" />
+            <div className="h-4 w-1/3 rounded bg-slate-200" />
+          </div>
+          <div className="h-14 w-14 rounded-full bg-slate-200 shrink-0" />
+        </div>
+        <div className="flex gap-3 pt-4 border-t border-slate-100/50">
+          <div className="h-8 w-32 rounded-full bg-slate-200" />
+          <div className="h-8 w-28 rounded-full bg-slate-200" />
+        </div>
+      </div>
+      <div className="h-12 w-full rounded-2xl bg-slate-200" />
+      <div className="rounded-3xl border border-line bg-white p-6 sm:p-8 space-y-4 shadow-sm">
+        <div className="h-5 w-1/4 rounded bg-slate-200" />
+        <div className="h-4.5 w-5/6 rounded bg-slate-200" />
+        <div className="h-4.5 w-2/3 rounded bg-slate-200" />
+      </div>
+    </div>
+  );
+}

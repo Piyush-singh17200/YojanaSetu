@@ -108,7 +108,7 @@ export default function Landing() {
   return (
     <div className="relative overflow-hidden bg-slate-50/20">
       {/* Decorative Grids */}
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primaryTint/30 via-white to-white" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-primaryTint/30 via-white to-white" />
       <div className="absolute inset-x-0 top-0 -z-10 h-[600px] w-full bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-25" />
 
       {/* Hero Section */}
@@ -117,104 +117,112 @@ export default function Landing() {
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-secondary/5 opacity-60 blur-3xl" />
         <div className="pointer-events-none absolute -left-16 top-40 h-80 w-80 rounded-full bg-primary/5 opacity-40 blur-3xl" />
 
-        <div className="mx-auto max-w-5xl text-center">
-          {/* Badge */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mx-auto mb-6 flex w-fit items-center gap-2 rounded-full border border-line bg-white px-4.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-primary shadow-sm"
-          >
-            <Sparkles size={13} className="text-secondary animate-pulse shrink-0" /> 
-            <span>Now with Multilingual AI Assistance & Instant Profile Check</span>
-          </motion.div>
-
-          {/* Typography Header */}
-          <motion.h1 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl font-black leading-[1.1] tracking-tight text-ink sm:text-5xl lg:text-6xl"
-          >
-            Every government benefit you qualify for, <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-primary via-primary/95 to-secondary bg-clip-text text-transparent">discovered in minutes.</span>
-          </motion.h1>
-
-          <motion.p 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mx-auto mt-6 max-w-2xl text-base text-sub sm:text-lg leading-relaxed font-semibold"
-          >
-            Answer a few simple questions. Our intelligent, privacy-first matcher instantly shows you every eligible central and state scheme with plain-language steps to apply.
-          </motion.p>
-
-          {/* CTAs */}
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-10 flex flex-col justify-center gap-3.5 sm:flex-row sm:items-center"
-          >
-            <button
-              onClick={() => navigate("/onboarding")}
-              className="group flex items-center justify-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-white shadow-md shadow-secondary/15 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] active:scale-95 px-8 py-4 text-sm font-extrabold"
+        <div className="mx-auto max-w-6xl grid lg:grid-cols-12 gap-12 items-center text-center lg:text-left">
+          {/* Left Text and inputs area */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Badge */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="mx-auto lg:mx-0 flex w-fit items-center gap-2 rounded-full border border-line bg-white px-4.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-primary shadow-sm"
             >
-              Check Your Eligibility 
-              <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-            </button>
-            <a
-              href="#search"
-              className="flex items-center justify-center gap-2 rounded-full border border-line bg-white hover:bg-slate-50 text-ink shadow-sm transition-all hover:shadow-md active:scale-95 px-8 py-4 text-sm font-extrabold"
-            >
-              Search Manually
-            </a>
-          </motion.div>
+              <Sparkles size={13} className="text-secondary animate-pulse shrink-0" /> 
+              <span>Now with Multilingual AI Assistance & Instant Profile Check</span>
+            </motion.div>
 
-          {/* Search bar container */}
-          <motion.div 
-            id="search" 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mx-auto mt-16 max-w-2xl rounded-2xl border border-line/80 bg-white p-2.5 shadow-md focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5 transition-all duration-300"
-          >
-            <div className="flex items-center gap-2">
-              <Search size={19} className="ml-2 shrink-0 text-sub" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && goSearch()}
-                placeholder="Try 'scholarship for engineering students in Maharashtra'"
-                className="w-full bg-transparent text-sm sm:text-base text-ink outline-none placeholder:text-slate-400 font-semibold"
-              />
-              <button 
-                className="rounded-full bg-slate-50 hover:bg-primaryTint/50 p-2.5 transition-colors" 
-                aria-label="Voice search"
+            {/* Typography Header */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-4xl font-black leading-[1.1] tracking-tight text-ink sm:text-5xl lg:text-6xl"
+            >
+              Every government benefit you qualify for, <br className="hidden sm:inline" />
+              <span className="bg-gradient-to-r from-primary via-primary/95 to-secondary bg-clip-text text-transparent">discovered in minutes.</span>
+            </motion.h1>
+
+            <motion.p 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mx-auto lg:mx-0 max-w-2xl text-base text-sub sm:text-lg leading-relaxed font-semibold"
+            >
+              Answer a few simple questions. Our intelligent, privacy-first matcher instantly shows you every eligible central and state scheme with plain-language steps to apply.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col justify-center lg:justify-start gap-3.5 sm:flex-row sm:items-center"
+            >
+              <button
+                onClick={() => navigate("/onboarding")}
+                className="group flex items-center justify-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-white shadow-md shadow-secondary/15 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] active:scale-95 px-8 py-4 text-sm font-extrabold"
               >
-                <Mic size={16} className="text-primary" />
+                Check Your Eligibility 
+                <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-0.5" />
               </button>
-              <button 
-                onClick={goSearch} 
-                className="rounded-xl bg-primary hover:bg-primaryDark text-white px-6 py-2.5 text-sm sm:text-base font-extrabold transition-colors shadow-sm"
+              <a
+                href="#search"
+                className="flex items-center justify-center gap-2 rounded-full border border-line bg-white hover:bg-slate-50 text-ink shadow-sm transition-all hover:shadow-md active:scale-95 px-8 py-4 text-sm font-extrabold"
               >
-                Search
-              </button>
+                Search Manually
+              </a>
+            </motion.div>
+
+            {/* Search bar container */}
+            <motion.div 
+              id="search" 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mx-auto lg:mx-0 max-w-2xl rounded-2xl border border-line/80 bg-white p-2.5 shadow-md focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5 transition-all duration-300"
+            >
+              <div className="flex items-center gap-2">
+                <Search size={19} className="ml-2 shrink-0 text-sub" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && goSearch()}
+                  placeholder="Try 'scholarship for engineering students in Maharashtra'"
+                  className="w-full bg-transparent text-sm sm:text-base text-ink outline-none placeholder:text-slate-400 font-semibold"
+                />
+                <button 
+                  className="rounded-full bg-slate-50 hover:bg-primaryTint/50 p-2.5 transition-colors" 
+                  aria-label="Voice search"
+                >
+                  <Mic size={16} className="text-primary" />
+                </button>
+                <button 
+                  onClick={goSearch} 
+                  className="rounded-xl bg-primary hover:bg-primaryDark text-white px-6 py-2.5 text-sm sm:text-base font-extrabold transition-colors shadow-sm"
+                >
+                  Search
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Popular Pills */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 text-xs text-sub">
+              <span className="font-extrabold text-slate-400">Popular Queries:</span>
+              {["PM-KISAN", "Scholarships", "Ayushman Bharat", "Mudras Loans"].map((t) => (
+                <button 
+                  key={t} 
+                  onClick={() => { setQuery(t); navigate(`/schemes?search=${encodeURIComponent(t)}`); }} 
+                  className="rounded-full border border-line bg-white px-3.5 py-1 text-xs font-bold hover:border-slate-300 hover:text-ink transition-all shadow-sm"
+                >
+                  {t}
+                </button>
+              ))}
             </div>
-          </motion.div>
+          </div>
 
-          {/* Popular Pills */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-xs text-sub">
-            <span className="font-extrabold text-slate-400">Popular Queries:</span>
-            {["PM-KISAN", "Scholarships", "Ayushman Bharat", "Mudras Loans"].map((t) => (
-              <button 
-                key={t} 
-                onClick={() => { setQuery(t); navigate(`/schemes?search=${encodeURIComponent(t)}`); }} 
-                className="rounded-full border border-line bg-white px-3.5 py-1 text-xs font-bold hover:border-slate-300 hover:text-ink transition-all shadow-sm"
-              >
-                {t}
-              </button>
-            ))}
+          {/* Right Showcase area */}
+          <div className="lg:col-span-5 relative hidden lg:block">
+            <InteractiveShowcase />
           </div>
         </div>
 

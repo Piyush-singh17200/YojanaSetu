@@ -13,30 +13,34 @@ const STEPS = [
 ];
 
 const FIELD_MAP = {
-  age: { label: "Age", type: "number", placeholder: "Enter your age (e.g. 34)", min: 1, max: 120 },
-  gender: { label: "Gender", type: "select", options: ["Female", "Male", "Other / prefer not to say"] },
+  age: { label: "Age", type: "number", placeholder: "Enter your age (e.g. 34)", min: 1, max: 120, help: "Used to determine school-age scholarships and senior pension programs." },
+  gender: { label: "Gender", type: "select", options: ["Female", "Male", "Other / prefer not to say"], help: "Required for women-focused welfare schemes." },
   occupation: {
     label: "Occupation",
     type: "select",
     options: ["Student", "Farmer", "Salaried employee", "Self-employed / business owner", "Homemaker", "Unemployed / job seeker", "Retired"],
+    help: "Filters job-seeker aids, farming subsidies, or business capital loans."
   },
   education: {
     label: "Highest Education Level",
     type: "select",
     options: ["Below 10th", "10th / 12th pass", "Undergraduate", "Postgraduate", "Doctorate", "Vocational / diploma"],
+    help: "Required for pre-matric, post-matric, or higher study fellowship programs."
   },
   income: {
     label: "Annual Family Income",
     type: "select",
     options: ["Below ₹1,00,000", "₹1,00,000 – ₹2,50,000", "₹2,50,000 – ₹5,00,000", "₹5,00,000 – ₹8,00,000", "Above ₹8,00,000"],
+    help: "Total gross family income before tax deductions."
   },
-  category: { label: "Social Category", type: "select", options: ["General", "OBC", "SC", "ST", "EWS", "Prefer not to say"] },
+  category: { label: "Social Category", type: "select", options: ["General", "OBC", "SC", "ST", "EWS", "Prefer not to say"], help: "Determines eligibility for reserved social category benefits." },
   state: {
     label: "State / UT",
     type: "select",
     options: ["Uttar Pradesh", "Maharashtra", "Bihar", "West Bengal", "Tamil Nadu", "Karnataka", "Rajasthan", "Other"],
+    help: "Matches state-level welfare programs."
   },
-  district: { label: "District", type: "text", placeholder: "Enter your district (e.g. Varanasi)" },
+  district: { label: "District", type: "text", placeholder: "Enter your district (e.g. Varanasi)", help: "Used for municipal or local block-level grants." },
 };
 
 export default function Onboarding() {
@@ -207,6 +211,11 @@ export default function Onboarding() {
                             hasErr ? "border-danger focus:border-danger focus:ring-danger/5" : "border-line/90"
                           }`}
                         />
+                      )}
+                      {cfg.help && (
+                        <p className="mt-1.5 text-[10px] sm:text-xs font-semibold text-sub tracking-wide">
+                          💡 {cfg.help}
+                        </p>
                       )}
                     </div>
                   );

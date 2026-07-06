@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import SchemeCard from "../components/SchemeCard";
-import { LoadingState, ErrorState, EmptySearchState } from "../components/StatusStates";
+import { LoadingState, ErrorState, EmptySearchState, CardSkeleton } from "../components/StatusStates";
 import { useSchemeContext } from "../context/SchemeContext";
 import { getSchemes } from "../api";
 import { Search, ArrowUpDown, SlidersHorizontal, Layers, CheckCircle2, RotateCcw } from "lucide-react";
@@ -230,9 +230,7 @@ export default function Results() {
           {/* Cards dynamic render section */}
           <div className="pt-2">
             {status === "loading" && !matched && (
-              <div className="py-12">
-                <LoadingState label="Fetching schemes directory..." />
-              </div>
+              <CardSkeleton />
             )}
             
             {status === "error" && !matched && (

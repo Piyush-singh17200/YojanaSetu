@@ -61,8 +61,20 @@ export default function TopNav() {
         setShowProfile(false);
       }
     }
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setShowNotifications(false);
+        setShowLanguage(false);
+        setShowProfile(false);
+        setOpen(false);
+      }
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, []);
 
   // Generate breadcrumbs dynamically based on path

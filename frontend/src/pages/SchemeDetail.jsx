@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Badge from "../components/Badge";
 import ScoreRing from "../components/ScoreRing";
-import { LoadingState, ErrorState } from "../components/StatusStates";
+import { LoadingState, ErrorState, DetailSkeleton } from "../components/StatusStates";
 import { useSchemeContext } from "../context/SchemeContext";
 import { getScheme } from "../api";
 
@@ -50,7 +50,7 @@ export default function SchemeDetail() {
   if (status === "loading") {
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <LoadingState label="Loading scheme details…" />
+        <DetailSkeleton />
       </div>
     );
   }
