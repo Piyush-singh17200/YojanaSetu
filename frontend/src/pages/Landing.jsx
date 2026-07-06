@@ -198,20 +198,22 @@ export default function Landing() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl font-black leading-[1.1] tracking-tight text-ink sm:text-5xl lg:text-6xl"
+              className="text-4xl font-black leading-[1.35] tracking-tight text-ink sm:text-5xl lg:text-6xl sm:leading-[1.25] lg:leading-[1.2] pb-1.5"
             >
               Every government benefit you qualify for, <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-primary via-primary/95 to-secondary bg-clip-text text-transparent">discovered in minutes.</span>
             </motion.h1>
 
-            <motion.p 
+            <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="mx-auto lg:mx-0 max-w-2xl text-base text-sub sm:text-lg leading-relaxed font-semibold"
+              className="mx-auto lg:mx-0 max-w-2xl rounded-2xl bg-slate-100/50 border border-slate-200/40 p-4 sm:p-5 text-center lg:text-left shadow-sm"
             >
-              Answer a few simple questions. Our intelligent, privacy-first matcher instantly shows you every eligible central and state scheme with plain-language steps to apply.
-            </motion.p>
+              <p className="text-xs sm:text-[14px] font-semibold text-slate-500 leading-relaxed">
+                Answer a few simple questions. Our intelligent, privacy-first matcher instantly shows you every eligible central and state scheme with plain-language steps to apply.
+              </p>
+            </motion.div>
 
             {/* CTAs */}
             <motion.div 
