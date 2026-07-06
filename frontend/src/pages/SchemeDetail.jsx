@@ -1,0 +1,272 @@
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ShieldCheck,
+  Clock,
+  Bookmark,
+  Share2,
+  Printer,
+  CheckCircle2,
+  FileText,
+  ExternalLink,
+  Check
+} from "lucide-react";
+import Badge from "../components/Badge";
+import ScoreRing from "../components/ScoreRing";
+import { LoadingState, ErrorState } from "../components/StatusStates";
+import { useSchemeContext } from "../context/SchemeContext";
+import { getScheme } from "../api";
+
+const TABS = [
+  { key: "overview", label: "Overview" },
+  { key: "eligibility", label: "Eligibility Criteria" },
+  { key: "documents", label: "Required Documents" },
+  { key: "process", label: "How to Apply" },
+];
+
+export default function SchemeDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { categories, saved, toggleSave } = useSchemeContext();
+  const [tab, setTab] = useState("overview");
+  const [scheme, setScheme] = useState(null);
+  const [status, setStatus] = useState("loading");
+  const [shared, setShared] = useState(false);
+
+  const load = () => {
+    setStatus("loading");
+    getScheme(id)
+      .then((data) => {
+        setScheme(data);
+        setStatus("ready");
+      })
+      .catch(() => setStatus("error"));
+  };
+
+  useEffect(load, [id]);
+
+  if (status === "loading") {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <LoadingState label="Loading scheme details…" />
+      </div>
+    );
+  }
+
+  if (status === "error" || !scheme) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <ErrorState message="We couldn't load this scheme." onRetry={load} />
+      </div>
+    );
+  }
+
+  const isSaved = saved.includes(scheme.id);
+  const matchedCategory = categories.find((c) => c.key === scheme.category);
+
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    });
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handlePortalRedirect = () => {
+    alert(`Redirecting you to the official Ministry portal for ${scheme.name}. Always ensure you submit applications through official govt.in domains.`);
+  };
+
+  return (
+    <div className="relative mx-auto max-w-3xl px-6 py-8 select-none printable-container">
+      {/* Background radial accent */}
+      <div className="absolute inset-x-0 top-0 -z-10 h-96 bg-gradient-to-b from-primaryTint/30 to-transparent opacity-60 no-print" />
+
+      {/* Back Button */}
+      <button 
+        onClick={() => navigate(-1)} 
+        className="group mb-6 flex items-center gap-1.5 text-xs sm:text-sm font-bold text-sub hover:text-ink transition-colors outline-none focus-visible:underline no-print"
+      >
+        <ChevronLeft size={16} className="transition-transform duration-200 group-hover:-translate-x-0.5" /> 
+        Back to schemes
+      </button>
+
+      {/* Main Details Panel */}
+      <div className="rounded-3xl border border-line bg-white p-6 sm:p-8 shadow-xl">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
+          <div className="flex-1">
+            <Badge tone="primary" variant="tinted" dot>
+              {matchedCategory?.label || scheme.category}
+            </Badge>
+            <h1 className="mt-3.5 text-2xl sm:text-3xl font-black text-ink leading-tight">
+              {scheme.name}
+            </h1>
+            <p className="mt-1.5 text-xs sm:text-sm font-extrabold text-slate-400">{scheme.dept}</p>
+          </div>
+          <div className="shrink-0 self-end sm:self-start no-print">
+            <ScoreRing value={scheme.match ?? scheme.baseMatch} />
+          </div>
+        </div>
+
+        {/* Dynamic Highlight Tags */}
+        <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3 border-t border-slate-100 pt-5">
+          <div className="inline-flex items-center gap-2 rounded-full bg-success/5 border border-success/15 px-4.5 py-2 text-xs font-bold text-success">
+            <ShieldCheck size={15} className="shrink-0" /> 
+            <span>Benefit: {scheme.benefit}</span>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-secondary/5 border border-secondary/15 px-4.5 py-2 text-xs font-bold text-secondary">
+            <Clock size={15} className="shrink-0" /> 
+            <span>Deadline: {scheme.deadline}</span>
+          </div>
+        </div>
+
+        {/* Action Button Strip */}
+        <div className="mt-8 flex flex-wrap gap-2.5 border-t border-slate-100 pt-6 no-print">
+          {/* Saved Toggle Button */}
+          <button
+            onClick={() => toggleSave(scheme.id)}
+            className={`flex items-center gap-1.5 rounded-2xl border px-4 py-2.5 text-xs font-bold transition-all active:scale-95 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+              isSaved 
+                ? "border-secondary bg-secondaryTint text-secondary" 
+                : "border-line bg-white text-sub hover:border-slate-300"
+            }`}
+          >
+            <Bookmark size={15} fill={isSaved ? "#F57C00" : "none"} />
+            {isSaved ? "Saved" : "Save Scheme"}
+          </button>
+          
+          {/* Share button */}
+          <div className="relative">
+            <button 
+              onClick={handleShare}
+              className={`flex items-center gap-1.5 rounded-2xl border px-4 py-2.5 text-xs font-bold transition-all active:scale-95 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                shared 
+                  ? "border-accent bg-accentTint/20 text-accent" 
+                  : "border-line bg-white text-sub hover:border-slate-300"
+              }`}
+            >
+              {shared ? <Check size={15} /> : <Share2 size={15} />} 
+              {shared ? "Copied" : "Share Link"}
+            </button>
+          </div>
+
+          {/* Print Checklist button */}
+          <button 
+            onClick={handlePrint}
+            className="flex items-center gap-1.5 rounded-2xl border border-line bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-ink px-4 py-2.5 text-xs font-bold text-sub transition-all active:scale-95 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            <Printer size={15} /> 
+            Print Guidelines
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs Menu Navigation (With layout slide transitions) */}
+      <div className="mt-8 flex gap-1 rounded-2xl border border-line bg-white p-1.5 shadow-sm no-print">
+        {TABS.map((t) => {
+          const isSelected = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="relative flex-1 rounded-xl py-2.5 text-xs sm:text-sm font-bold transition-colors outline-none"
+            >
+              {/* Sliding Pill block */}
+              {isSelected && (
+                <motion.div
+                  layoutId="activeDetailTab"
+                  className="absolute inset-0 rounded-lg bg-primary shadow-sm"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+              <span className={`relative z-10 ${isSelected ? "text-white" : "text-sub hover:text-ink"}`}>
+                {t.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Dynamic Tab Body Container */}
+      <div className="mt-6 rounded-3xl border border-line bg-white p-6 sm:p-8 shadow-xl min-h-[220px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18 }}
+          >
+            {tab === "overview" && (
+              <div>
+                <h3 className="text-lg font-black text-ink">What this Scheme Offers</h3>
+                <p className="mt-3.5 text-xs sm:text-sm sm:text-base leading-relaxed text-sub font-semibold">
+                  {scheme.tagline}. Administered officially by the <strong className="text-ink font-extrabold">{scheme.dept}</strong>, this program is structured to streamline critical benefits to citizens nationwide with simplified legal procedures and direct transfers.
+                </p>
+              </div>
+            )}
+
+            {tab === "eligibility" && (
+              <div>
+                <h3 className="text-lg font-black text-ink mb-4">Qualification Criteria</h3>
+                <ul className="flex flex-col gap-3.5">
+                  {scheme.eligibility.map((e) => (
+                    <li key={e} className="flex items-start gap-3 text-xs sm:text-sm sm:text-base font-semibold text-ink leading-relaxed">
+                      <CheckCircle2 size={16} className="text-success mt-0.5 shrink-0" />
+                      <span>{e}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {tab === "documents" && (
+              <div>
+                <h3 className="text-lg font-black text-ink mb-4">Required Documents Checklist</h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {scheme.documents.map((d) => (
+                    <li key={d} className="flex items-center gap-3 rounded-2xl border border-line bg-slate-50/50 p-3.5 text-xs sm:text-sm font-extrabold text-ink shadow-sm hover:border-primary/25 transition-all">
+                      <FileText size={16} className="text-primary shrink-0" />
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {tab === "process" && (
+              <div>
+                <h3 className="text-lg font-black text-ink mb-5">Step-by-Step Application Instructions</h3>
+                <ol className="flex flex-col gap-5">
+                  {scheme.steps.map((s, i) => (
+                    <li key={s} className="flex gap-4 items-start">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-black shadow-sm border border-primary/25">
+                        {i + 1}
+                      </span>
+                      <span className="text-xs sm:text-sm sm:text-base font-semibold text-ink leading-relaxed pt-0.5">{s}</span>
+                    </li>
+                  ))}
+                </ol>
+                
+                <div className="mt-8 border-t border-slate-100 pt-6 flex justify-end no-print">
+                  <button 
+                    onClick={handlePortalRedirect}
+                    className="group flex items-center gap-2 rounded-full bg-secondary hover:bg-secondary/95 text-white shadow-md transition-all hover:scale-[1.01] active:scale-95 px-6 py-3 text-xs sm:text-sm font-extrabold"
+                  >
+                    Go to Official Portal 
+                    <ExternalLink size={14} className="transition-transform duration-200 group-hover:translate-x-0.5 shrink-0" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
