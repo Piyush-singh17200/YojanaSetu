@@ -41,3 +41,8 @@ frontend/build/
 .env.production.local
 *.env
 *.env.*
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db

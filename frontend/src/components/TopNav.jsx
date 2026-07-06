@@ -18,6 +18,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./Logo";
+import { useSchemeContext } from "../context/SchemeContext";
 
 const ITEMS = [
   { to: "/", label: "Home", icon: Home },
@@ -35,6 +36,7 @@ const NOTIFICATIONS = [
 export default function TopNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useSchemeContext();
   
   const [open, setOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -226,58 +228,67 @@ export default function TopNav() {
             </AnimatePresence>
           </div>
 
-          {/* Profile Dropdown */}
-          <div className="relative" ref={profileRef}>
-            <button
-              onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center gap-1.5 rounded-full border border-line bg-white pl-1.5 pr-2.5 py-1 hover:border-slate-300 hover:shadow-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-              aria-label="User profile settings"
-              aria-expanded={showProfile}
-              aria-haspopup="true"
-            >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-extrabold text-white">
-                YS
-              </div>
-              <ChevronDown size={12} className={`text-sub transition-transform duration-200 ${showProfile ? "rotate-180" : ""}`} />
-            </button>
+          {/* Profile Dropdown or Sign In */}
+          {user ? (
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setShowProfile(!showProfile)}
+                className="flex items-center gap-1.5 rounded-full border border-line bg-white pl-1.5 pr-2.5 py-1 hover:border-slate-300 hover:shadow-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label="User profile settings"
+                aria-expanded={showProfile}
+                aria-haspopup="true"
+              >
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-extrabold text-white uppercase">
+                  {user.name ? user.name.charAt(0) : "U"}
+                </div>
+                <ChevronDown size={12} className={`text-sub transition-transform duration-200 ${showProfile ? "rotate-180" : ""}`} />
+              </button>
 
-            <AnimatePresence>
-              {showProfile && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-1.5 w-48 origin-top-right rounded-3xl border border-line bg-white p-1.5 shadow-2xl ring-1 ring-black/5 z-50"
-                >
-                  <div className="border-b border-slate-100 px-3 py-2">
-                    <p className="text-xs font-extrabold text-ink leading-tight">Yojana Citizen</p>
-                    <p className="text-[10px] font-semibold text-sub mt-0.5">citizen@yojanasetu.in</p>
-                  </div>
-                  <div className="p-1">
-                    <button
-                      onClick={() => { navigate("/dashboard"); setShowProfile(false); }}
-                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-sub hover:bg-slate-50 hover:text-ink transition-colors"
-                    >
-                      <Bookmark size={14} /> My Saved Schemes
-                    </button>
-                    <button
-                      onClick={() => { navigate("/dashboard"); setShowProfile(false); }}
-                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-sub hover:bg-slate-50 hover:text-ink transition-colors"
-                    >
-                      <Settings size={14} /> Settings
-                    </button>
-                    <button
-                      onClick={() => { setShowProfile(false); alert("Simulated logout success!"); }}
-                      className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-danger hover:bg-red-50 transition-colors mt-0.5 border-t border-slate-50 pt-2"
-                    >
-                      <LogOut size={14} /> Log Out
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              <AnimatePresence>
+                {showProfile && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-1.5 w-48 origin-top-right rounded-3xl border border-line bg-white p-1.5 shadow-2xl ring-1 ring-black/5 z-50"
+                  >
+                    <div className="border-b border-slate-100 px-3 py-2">
+                      <p className="text-xs font-extrabold text-ink leading-tight truncate">{user.name}</p>
+                      <p className="text-[10px] font-semibold text-sub mt-0.5 truncate">{user.email}</p>
+                    </div>
+                    <div className="p-1">
+                      <button
+                        onClick={() => { navigate("/dashboard"); setShowProfile(false); }}
+                        className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-sub hover:bg-slate-50 hover:text-ink transition-colors"
+                      >
+                        <Bookmark size={14} /> My Saved Schemes
+                      </button>
+                      <button
+                        onClick={() => { navigate("/dashboard"); setShowProfile(false); }}
+                        className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-sub hover:bg-slate-50 hover:text-ink transition-colors"
+                      >
+                        <Settings size={14} /> Settings
+                      </button>
+                      <button
+                        onClick={() => { setShowProfile(false); logout(); navigate("/"); }}
+                        className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-danger hover:bg-red-50 transition-colors mt-0.5 border-t border-slate-50 pt-2"
+                      >
+                        <LogOut size={14} /> Log Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-1.5 rounded-2xl border border-line bg-white px-4.5 py-2 text-xs font-extrabold text-ink hover:bg-slate-50 transition-colors shadow-sm outline-none"
+            >
+              Sign In
+            </Link>
+          )}
 
           {/* Primary Eligibility Flow Trigger */}
           <button

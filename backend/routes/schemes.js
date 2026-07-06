@@ -1,14 +1,28 @@
 const express = require("express");
+const { all, get } = require("../db");
+const { CATEGORIES } = require("../data/schemes");
+
 const router = express.Router();
-const { SCHEMES, CATEGORIES } = require("../data/schemes");
 
 // GET /api/schemes - list all schemes (optionally filter by category)
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   const { category } = req.query;
-  const results = category && category !== "all"
-    ? SCHEMES.filter((s) => s.category === category)
-    : SCHEMES;
-  res.json(results.map((s) => ({ ...s, match: s.baseMatch })));
+  try {
+    const rows = category && category !== "all"
+      ? await all("SELECT * FROM schemes WHERE category = ?", [category])
+      : await all("SELECT * FROM schemes");
+
+    const parsed = rows.map((r) => ({
+      ...r,
+      match: r.baseMatch,
+      eligibility: JSON.parse(r.eligibility || "[]"),
+      documents: JSON.parse(r.documents || "[]"),
+      steps: JSON.parse(r.steps || "[]")
+    }));
+    res.json(parsed);
+  } catch (err) {
+    res.status(500).json({ error: "Database error retrieving schemes." });
+  }
 });
 
 // GET /api/schemes/categories - category metadata
@@ -17,15 +31,24 @@ router.get("/categories", (req, res) => {
 });
 
 // GET /api/schemes/:id - single scheme detail
-router.get("/:id", (req, res) => {
-  const scheme = SCHEMES.find((s) => s.id === req.params.id);
-  if (!scheme) return res.status(404).json({ error: "Scheme not found" });
-  res.json({ ...scheme, match: scheme.baseMatch });
+router.get("/:id", async (req, res) => {
+  try {
+    const r = await get("SELECT * FROM schemes WHERE id = ?", [req.params.id]);
+    if (!r) return res.status(404).json({ error: "Scheme not found" });
+
+    res.json({
+      ...r,
+      match: r.baseMatch,
+      eligibility: JSON.parse(r.eligibility || "[]"),
+      documents: JSON.parse(r.documents || "[]"),
+      steps: JSON.parse(r.steps || "[]")
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Database error retrieving scheme details." });
+  }
 });
 
-// Very small rule-based matcher. In production this would be a proper
-// eligibility rules engine; this gives sensible, explainable results
-// for an MVP without needing a database of legal rule text.
+// Rule-based matching scorer
 function computeMatch(profile, scheme) {
   let score = scheme.baseMatch;
 
@@ -53,12 +76,63 @@ function computeMatch(profile, scheme) {
 }
 
 // POST /api/schemes/match - personalised ranking based on onboarding profile
-router.post("/match", express.json(), (req, res) => {
+router.post("/match", express.json(), async (req, res) => {
   const profile = req.body || {};
-  const ranked = SCHEMES
-    .map((s) => ({ ...s, match: computeMatch(profile, s) }))
-    .sort((a, b) => b.match - a.match);
-  res.json(ranked);
+  try {
+    const rows = await all("SELECT * FROM schemes");
+    const parsed = rows.map((r) => ({
+      ...r,
+      eligibility: JSON.parse(r.eligibility || "[]"),
+      documents: JSON.parse(r.documents || "[]"),
+      steps: JSON.parse(r.steps || "[]")
+    }));
+
+    const ranked = parsed
+      .map((s) => ({ ...s, match: computeMatch(profile, s) }))
+      .sort((a, b) => b.match - a.match);
+
+    res.json(ranked);
+  } catch (err) {
+    res.status(500).json({ error: "Database error running eligibility evaluation matching." });
+  }
+});
+
+// POST /api/schemes/assistant - RAG query
+router.post("/assistant", express.json(), async (req, res) => {
+  const { message, profile } = req.body;
+  const { queryAssistant } = require("../utils/gemini");
+  
+  try {
+    const rows = await all("SELECT * FROM schemes");
+    const parsedSchemes = rows.map((r) => ({
+      ...r,
+      eligibility: JSON.parse(r.eligibility || "[]"),
+      documents: JSON.parse(r.documents || "[]"),
+      steps: JSON.parse(r.steps || "[]")
+    }));
+
+    const reply = await queryAssistant(message, profile, parsedSchemes);
+    
+    // Filter matching scheme details referenced in reply
+    const matched = parsedSchemes.filter((s) => {
+      return reply.includes(s.name) || reply.toLowerCase().includes(s.id.toLowerCase());
+    });
+
+    res.json({ reply, schemes: matched });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to generate AI assistant reply." });
+  }
+});
+
+// GET /api/schemes/crawler/trigger - Crawler check
+router.get("/crawler/trigger", async (req, res) => {
+  const { scrapeAndExtract } = require("../utils/crawlers");
+  try {
+    const saved = await scrapeAndExtract();
+    res.json({ status: "ok", added: saved });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to run scraper crawler check." });
+  }
 });
 
 module.exports = router;

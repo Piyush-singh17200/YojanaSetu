@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Badge from "../components/Badge";
-import { getSchemes } from "../api";
+import { askAIAssistant } from "../api";
+import { useSchemeContext } from "../context/SchemeContext";
 import { Sparkles, Send, User, Bot, ArrowRight, Info } from "lucide-react";
 
 const SUGGESTIONS = [
@@ -12,6 +13,7 @@ const SUGGESTIONS = [
 ];
 
 export default function Assistant() {
+  const { profile } = useSchemeContext();
   const chatEndRef = useRef(null);
   const [messages, setMessages] = useState([
     {
@@ -34,18 +36,13 @@ export default function Assistant() {
     setLoading(true);
     
     try {
-      const all = await getSchemes();
-      // Simulating a smart match filters
-      const results = all.filter((s) => s.category === "education" || s.category === "agriculture").slice(0, 2);
-      
-      await new Promise((r) => setTimeout(r, 1200));
-
+      const res = await askAIAssistant(text, profile);
       setMessages((m) => [
         ...m,
         { 
           role: "assistant", 
-          text: "Based on the details you provided, here are some recommended welfare schemes you may qualify for:", 
-          schemes: results 
+          text: res.reply, 
+          schemes: res.schemes 
         }
       ]);
     } catch {

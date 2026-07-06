@@ -6,6 +6,8 @@ import Assistant from "./pages/Assistant";
 import Results from "./pages/Results";
 import SchemeDetail from "./pages/SchemeDetail";
 import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -18,6 +20,8 @@ export default function App() {
         <Route path="/schemes" element={<Results />} />
         <Route path="/schemes/:id" element={<SchemeDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="*" element={<Landing />} />
       </Routes>
     </div>
