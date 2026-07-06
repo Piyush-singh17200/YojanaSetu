@@ -109,3 +109,47 @@ body {
   background-color: transparent !important;
   box-shadow: none !important;
 }
+
+/* Global translation line-height overrides for all Indic languages to prevent vowel accents (matras) overlapping */
+html.translated-ltr,
+html.translated-rtl {
+  font-size: 100%;
+}
+
+html.translated-ltr h1,
+html.translated-ltr h2,
+html.translated-ltr h3,
+html.translated-ltr h4,
+html.translated-ltr h5,
+html.translated-ltr h6,
+html.translated-rtl h1,
+html.translated-rtl h2,
+html.translated-rtl h3,
+html.translated-rtl h4,
+html.translated-rtl h5,
+html.translated-rtl h6 {
+  line-height: 1.45 !important;
+  letter-spacing: 0.01em !important;
+  padding-bottom: 0.1em;
+}
+
+html.translated-ltr p,
+html.translated-ltr span,
+html.translated-ltr select,
+html.translated-ltr option,
+html.translated-ltr button,
+html.translated-ltr a,
+html.translated-rtl p,
+html.translated-rtl span,
+html.translated-rtl select,
+html.translated-rtl option,
+html.translated-rtl button,
+html.translated-rtl a {
+  line-height: 1.6 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Ensure dropdown select fields display full text length when translated */
+select {
+  text-overflow: ellipsis;
+}

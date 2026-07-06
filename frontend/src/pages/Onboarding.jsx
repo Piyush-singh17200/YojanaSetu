@@ -159,7 +159,7 @@ export default function Onboarding() {
               exit="exit"
               className="w-full"
             >
-              <h2 className="text-2xl font-black text-ink tracking-tight mt-2 leading-none">
+              <h2 className="text-2xl font-black text-ink tracking-tight mt-2 leading-normal">
                 {current.title}
               </h2>
               <p className="mt-2 text-xs sm:text-sm font-semibold text-sub leading-relaxed">
