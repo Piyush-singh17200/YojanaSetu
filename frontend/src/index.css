@@ -83,3 +83,29 @@ a:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Hide Google Translate default toolbar layout to preserve premium design */
+.skiptranslate,
+#google_translate_element,
+.goog-te-banner-frame,
+.goog-te-banner,
+iframe.goog-te-menu-frame,
+.goog-te-menu-value {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+.goog-tooltip,
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}

@@ -27,6 +27,32 @@ const ITEMS = [
   { to: "/dashboard", label: "My Dashboard", icon: User },
 ];
 
+const LANGUAGES = [
+  { code: "en", label: "English", native: "English" },
+  { code: "hi", label: "Hindi", native: "हिन्दी" },
+  { code: "bn", label: "Bengali", native: "বাংলা" },
+  { code: "mr", label: "Marathi", native: "मराठी" },
+  { code: "te", label: "Telugu", native: "తెలుగు" },
+  { code: "ta", label: "Tamil", native: "தமிழ்" },
+  { code: "gu", label: "Gujarati", native: "ગુજરાતી" },
+  { code: "ur", label: "Urdu", native: "اردو" },
+  { code: "kn", label: "Kannada", native: "ಕನ್ನಡ" },
+  { code: "or", label: "Odia", native: "ଓଡ଼ିଆ" },
+  { code: "ml", label: "Malayalam", native: "മലയാളം" },
+  { code: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ" },
+  { code: "sa", label: "Sanskrit", native: "संस्कृतम्" },
+  { code: "as", label: "Assamese", native: "অসমীয়া" },
+  { code: "ks", label: "Kashmiri", native: "كأشُر" },
+  { code: "ne", label: "Nepali", native: "नेपाली" },
+  { code: "kok", label: "Konkani", native: "कोंकणी" },
+  { code: "mai", label: "Maithili", native: "मैथिली" },
+  { code: "doi", label: "Dogri", native: "डोगरी" },
+  { code: "sd", label: "Sindhi", native: "सिन्धी" },
+  { code: "mni", label: "Manipuri", native: "मणिपुरी" },
+  { code: "brx", label: "Bodo", native: "बड़ो" },
+  { code: "sat", label: "Santhali", native: "संताली" }
+];
+
 const NOTIFICATIONS = [
   { id: 1, text: "New scheme matched: PM-KISAN (Saffron Category)", time: "2 hours ago", unread: true },
   { id: 2, text: "Document submission deadline tomorrow: NSP Scholarship", time: "1 day ago", unread: true },
@@ -42,7 +68,25 @@ export default function TopNav() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [lang, setLang] = useState("EN");
+  const [lang, setLang] = useState(() => localStorage.getItem("yojanasetu_lang") || "en");
+
+  const selectLanguage = (code) => {
+    try {
+      if (code === "en") {
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname + ";";
+      } else {
+        document.cookie = `googtrans=/en/${code}; path=/;`;
+        document.cookie = `googtrans=/en/${code}; path=/; domain=${window.location.hostname};`;
+      }
+    } catch (e) {
+      console.warn("Cookie write warning:", e);
+    }
+    localStorage.setItem("yojanasetu_lang", code);
+    setLang(code);
+    setShowLanguage(false);
+    window.location.reload();
+  };
 
   const notifRef = useRef(null);
   const langRef = useRef(null);
@@ -149,7 +193,7 @@ export default function TopNav() {
               aria-haspopup="true"
             >
               <Globe size={14} />
-              <span>{lang === "EN" ? "English" : "हिन्दी"}</span>
+              <span>{LANGUAGES.find((l) => l.code === lang)?.native || "English"}</span>
               <ChevronDown size={12} className={`transition-transform duration-200 ${showLanguage ? "rotate-180" : ""}`} />
             </button>
             
@@ -160,20 +204,20 @@ export default function TopNav() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-1.5 w-28 origin-top-right rounded-2xl border border-line bg-white p-1.5 shadow-xl ring-1 ring-black/5 z-50"
+                  className="absolute right-0 mt-1.5 w-44 origin-top-right rounded-2xl border border-line bg-white p-1.5 shadow-xl ring-1 ring-black/5 z-50 max-h-60 overflow-y-auto"
                 >
-                  <button
-                    onClick={() => { setLang("EN"); setShowLanguage(false); }}
-                    className={`w-full text-left rounded-xl px-3 py-1.5 text-xs font-bold transition-colors ${lang === "EN" ? "bg-primaryTint text-primary" : "text-sub hover:bg-slate-50 hover:text-ink"}`}
-                  >
-                    English
-                  </button>
-                  <button
-                    onClick={() => { setLang("HI"); setShowLanguage(false); }}
-                    className={`w-full text-left rounded-xl px-3 py-1.5 text-xs font-bold transition-colors mt-0.5 ${lang === "HI" ? "bg-primaryTint text-primary" : "text-sub hover:bg-slate-50 hover:text-ink"}`}
-                  >
-                    हिन्दी
-                  </button>
+                  {LANGUAGES.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => selectLanguage(l.code)}
+                      className={`w-full text-left rounded-xl px-3 py-1.5 text-xs font-bold transition-colors ${
+                        lang === l.code ? "bg-primary/5 text-primary" : "text-sub hover:bg-slate-50 hover:text-ink"
+                      }`}
+                    >
+                      <span className="font-semibold">{l.native}</span>
+                      <span className="text-[10px] text-slate-400 font-normal ml-1.5">({l.label})</span>
+                    </button>
+                  ))}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -346,20 +390,17 @@ export default function TopNav() {
               {/* Mobile Language Switcher */}
               <div className="flex items-center justify-between border-t border-slate-100 pt-3.5 mt-2 px-4 text-xs font-bold text-sub">
                 <span className="flex items-center gap-1.5"><Globe size={14} /> Language</span>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setLang("EN")} 
-                    className={`rounded-lg px-2.5 py-1 ${lang === "EN" ? "bg-primary/5 text-primary" : "text-sub"}`}
-                  >
-                    English
-                  </button>
-                  <button 
-                    onClick={() => setLang("HI")} 
-                    className={`rounded-lg px-2.5 py-1 ${lang === "HI" ? "bg-primary/5 text-primary" : "text-sub"}`}
-                  >
-                    हिन्दी
-                  </button>
-                </div>
+                <select
+                  value={lang}
+                  onChange={(e) => selectLanguage(e.target.value)}
+                  className="rounded-xl border border-line bg-white px-3 py-2 text-xs font-extrabold text-ink outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all max-w-[150px]"
+                >
+                  {LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.native}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Mobile Primary Action Button */}
