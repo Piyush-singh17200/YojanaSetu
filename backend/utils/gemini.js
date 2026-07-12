@@ -29,7 +29,10 @@ GUIDELINES:
 2. If the user asks about a program not in the list, state that we do not have verified data for it yet, and guide them to the database items that match nearest.
 3. Contrast their profile (age, income limit, state, gender, disability status) against the scheme criteria. Clearly explain why they are eligible, or if they are close, what is missing.
 4. Simplify complex government terms into plain, simple-to-understand language.
-5. Provide a clear checklist of required documents for any matched schemes.
+5. For any matched or recommended scheme, you MUST explicitly detail:
+   - **Documents Required**: List out the exact documents (e.g. Aadhaar, Income certificate) required to apply.
+   - **How to Apply**: Walk the user step-by-step through the application instructions.
+   - **Processing Time / Timeline**: Clearly state the scheme's deadline and estimate how long the process takes (e.g. processing timeframe, rolling basis).
 6. Keep your response professional, structured, and easy to read. Use bullet points where appropriate.`;
 
   if (!apiKey || apiKey === "your_gemini_api_key_here") {
@@ -80,9 +83,17 @@ function fallbackResponse(msg, profile, schemes) {
     let response = `Based on your request, I found some relevant schemes you may qualify for:\n\n`;
     matches.forEach((s) => {
       const eligArr = Array.isArray(s.eligibility) ? s.eligibility : JSON.parse(s.eligibility || "[]");
-      response += `*   **${s.name}**: Offers ${s.benefit}. Eligibility: ${eligArr.slice(0, 2).join(", ")}.\n`;
+      const docsArr = Array.isArray(s.documents) ? s.documents : JSON.parse(s.documents || "[]");
+      const stepsArr = Array.isArray(s.steps) ? s.steps : JSON.parse(s.steps || "[]");
+
+      response += `### 🌟 ${s.name}\n`;
+      response += `*   **Primary Benefit**: ${s.benefit}\n`;
+      response += `*   **Timeline / Deadline**: ${s.deadline}\n`;
+      response += `*   **Eligibility Details**:\n${eligArr.map(x => `    - ${x}`).join("\n")}\n`;
+      response += `*   **Required Documents**:\n${docsArr.map(x => `    - ${x}`).join("\n")}\n`;
+      response += `*   **How to Apply (Instructions)**:\n${stepsArr.map((x, i) => `    ${i + 1}. ${x}`).join("\n")}\n\n`;
     });
-    response += `\nGo to the Schemes tab to view the complete details and print your required document checklists!`;
+    response += `You can navigate to the "Browse Schemes" tab to click "Apply Now" and go directly to each scheme's official registration portal!`;
     return response;
   }
 

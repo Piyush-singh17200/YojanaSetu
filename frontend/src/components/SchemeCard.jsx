@@ -52,10 +52,26 @@ export default function SchemeCard({ scheme }) {
       <div className="mt-5 flex items-center gap-2 border-t border-slate-50 pt-4">
         <Link
           to={`/schemes/${scheme.id}`}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-primary hover:bg-primaryDark text-white py-2.5 text-xs sm:text-sm font-extrabold shadow-sm transition-all duration-200 active:scale-98 outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="flex-1 inline-flex items-center justify-center rounded-2xl border border-line bg-white hover:bg-slate-50 hover:border-slate-300 text-sub hover:text-ink py-2.5 text-xs font-bold transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/40 text-center"
         >
-          View Details <ArrowRight size={14} className="opacity-70" />
+          Details
         </Link>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              const viewed = JSON.parse(localStorage.getItem("yojanasetu_recently_viewed")) || [];
+              const filtered = viewed.filter((x) => x !== scheme.id);
+              const next = [scheme.id, ...filtered].slice(0, 4);
+              localStorage.setItem("yojanasetu_recently_viewed", JSON.stringify(next));
+            } catch (err) {}
+            window.open(scheme.official_link || "https://www.india.gov.in", "_blank", "noopener,noreferrer");
+          }}
+          className="flex-1 inline-flex items-center justify-center gap-1 rounded-2xl bg-secondary hover:bg-secondary/95 text-white py-2.5 text-xs font-black shadow-sm transition-all duration-200 active:scale-98 outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 text-center"
+        >
+          Apply Now <ArrowRight size={13} />
+        </button>
 
         {/* Share Button */}
         <div className="relative">
