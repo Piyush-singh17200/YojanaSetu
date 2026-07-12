@@ -99,7 +99,43 @@ export default function Assistant() {
                     : "border border-line/70 bg-white text-ink rounded-tl-sm"
                 }`}
               >
-                <p>{m.text}</p>
+                {m.role === "user" ? (
+                  <p>{m.text}</p>
+                ) : (
+                  <div className="prose prose-sm max-w-none">
+                    {m.text.split("\n").map((line, li) => {
+                      if (line.startsWith("### ")) {
+                        return <h3 key={li} className="text-sm font-black text-primary mt-3 mb-1 first:mt-0">{line.replace("### ", "").replace(/🌟 /g, "🌟 ")}</h3>;
+                      }
+                      if (line.startsWith("## ")) {
+                        return <h2 key={li} className="text-base font-black text-ink mt-3 mb-1">{line.replace("## ", "")}</h2>;
+                      }
+                      if (line.startsWith("*   **") || line.startsWith("-   **")) {
+                        const content = line.replace(/^\*\s+|\-\s+/, "");
+                        const parts = content.split(/\*\*(.*?)\*\*/g);
+                        return (
+                          <p key={li} className="ml-2 mb-1 flex gap-1.5 items-start">
+                            <span className="text-primary shrink-0 mt-0.5">•</span>
+                            <span>{parts.map((p, pi) => pi % 2 === 1 ? <strong key={pi} className="font-extrabold text-ink">{p}</strong> : p)}</span>
+                          </p>
+                        );
+                      }
+                      if (line.match(/^\s{4}\d+\./)) {
+                        return <p key={li} className="ml-6 mb-0.5 text-xs font-semibold text-sub">{line.trim()}</p>;
+                      }
+                      if (line.match(/^\s{4}-/)) {
+                        return <p key={li} className="ml-6 mb-0.5 text-xs font-semibold text-sub flex gap-1.5"><span>–</span><span>{line.replace(/^\s+-\s*/, "")}</span></p>;
+                      }
+                      if (line.trim() === "") return <div key={li} className="h-2" />;
+                      const boldParts = line.split(/\*\*(.*?)\*\*/g);
+                      return (
+                        <p key={li} className="mb-1">
+                          {boldParts.map((p, pi) => pi % 2 === 1 ? <strong key={pi} className="font-extrabold text-ink">{p}</strong> : p)}
+                        </p>
+                      );
+                    })}
+                  </div>
+                )}
                 
                 {/* Embedded Schemes Cards */}
                 {m.schemes && (
