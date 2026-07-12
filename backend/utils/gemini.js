@@ -14,7 +14,7 @@ async function queryAssistant(userMessage, userProfile = {}, allSchemes = []) {
   const profileText = JSON.stringify(userProfile);
 
   const prompt = `You are YojanaSetu AI Assistant, an expert on Indian government welfare schemes.
-Your task is to analyze the citizen's query, profile, and guide them to eligible schemes.
+Your task is to analyze the citizen's query and profile, and guide them to eligible schemes from our database.
 
 Here is the database of available schemes:
 ${contextText}
@@ -24,8 +24,13 @@ ${profileText}
 
 The citizen asks: "${userMessage}"
 
-Guide them clearly, matching their profile against eligible schemes. Highlight the benefits they qualify for, explain why, and lay out simple next steps.
-Keep your response professional, structured, and easy to read. Use bullet points where appropriate.`;
+GUIDELINES:
+1. CRITICAL: You MUST NOT invent, make up, or hallucinate any government schemes that are not in the provided database of available schemes above. Only reference schemes from the provided list.
+2. If the user asks about a program not in the list, state that we do not have verified data for it yet, and guide them to the database items that match nearest.
+3. Contrast their profile (age, income limit, state, gender, disability status) against the scheme criteria. Clearly explain why they are eligible, or if they are close, what is missing.
+4. Simplify complex government terms into plain, simple-to-understand language.
+5. Provide a clear checklist of required documents for any matched schemes.
+6. Keep your response professional, structured, and easy to read. Use bullet points where appropriate.`;
 
   if (!apiKey || apiKey === "your_gemini_api_key_here") {
     console.log("No VITE/GEMINI API key found. Using smart heuristic assistant fallback.");

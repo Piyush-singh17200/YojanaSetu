@@ -33,8 +33,8 @@ async function scrapeAndExtract() {
       const exists = await get("SELECT id FROM schemes WHERE id = ?", [s.id]);
       if (!exists) {
         await run(
-          `INSERT INTO schemes (id, name, dept, category, tagline, baseMatch, benefit, deadline, eligibility, documents, steps)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO schemes (id, name, dept, category, tagline, baseMatch, benefit, deadline, eligibility, documents, steps, state, official_link, last_updated, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             s.id,
             s.name,
@@ -46,7 +46,11 @@ async function scrapeAndExtract() {
             s.deadline,
             JSON.stringify(s.eligibility || []),
             JSON.stringify(s.documents || []),
-            JSON.stringify(s.steps || [])
+            JSON.stringify(s.steps || []),
+            s.state || "Central",
+            s.official_link || `https://${s.id}.gov.in`,
+            new Date().toISOString().split("T")[0],
+            "pending_verification"
           ]
         );
         console.log(`Saved new scheme to YojanaSetu DB: ${s.name}`);
@@ -132,8 +136,8 @@ async function triggerMockScraper() {
   const exists = await get("SELECT id FROM schemes WHERE id = ?", [mockScheme.id]);
   if (!exists) {
     await run(
-      `INSERT INTO schemes (id, name, dept, category, tagline, baseMatch, benefit, deadline, eligibility, documents, steps)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO schemes (id, name, dept, category, tagline, baseMatch, benefit, deadline, eligibility, documents, steps, state, official_link, last_updated, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         mockScheme.id,
         mockScheme.name,
@@ -145,7 +149,11 @@ async function triggerMockScraper() {
         mockScheme.deadline,
         JSON.stringify(mockScheme.eligibility),
         JSON.stringify(mockScheme.documents),
-        JSON.stringify(mockScheme.steps)
+        JSON.stringify(mockScheme.steps),
+        "Central",
+        "https://pmvishwakarma.gov.in",
+        new Date().toISOString().split("T")[0],
+        "pending_verification"
       ]
     );
     console.log("Mock crawler successfully inserted: PM Vishwakarma Scheme");

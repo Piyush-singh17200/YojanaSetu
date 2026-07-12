@@ -88,3 +88,34 @@ export function askAIAssistant(message, profile) {
     body: JSON.stringify({ message, profile })
   }).then(handle);
 }
+
+// Admin CMS Control API methods
+export function verifyScheme(token, id, status) {
+  return fetch(`${API_BASE}/api/schemes/${id}/verify`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ status })
+  }).then(handle);
+}
+
+export function createScheme(token, schemeData) {
+  return fetch(`${API_BASE}/api/schemes`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(schemeData)
+  }).then(handle);
+}
+
+export function triggerCrawler(token) {
+  return fetch(`${API_BASE}/api/schemes/crawler/trigger`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  }).then(handle);
+}

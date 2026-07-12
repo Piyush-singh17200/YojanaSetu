@@ -6,15 +6,16 @@ import { useSchemeContext } from "../context/SchemeContext";
 import { matchSchemes } from "../api";
 
 const STEPS = [
-  { key: "basics", title: "Personal Details", desc: "Age and gender help filter gender-specific and youth schemes.", fields: ["age", "gender"] },
+  { key: "basics", title: "Personal Details", desc: "Age, gender, and disability status help filter targeted programs.", fields: ["age", "gender", "disability"] },
   { key: "work", title: "Education & Career", desc: "Select details to search for student scholarships and farmer supports.", fields: ["occupation", "education"] },
   { key: "household", title: "Income & Category", desc: "Financial stats determine eligibility for central economic aids.", fields: ["income", "category"] },
-  { key: "location", title: "Your Location", desc: "State and district mapping triggers regional and municipal benefits.", fields: ["state", "district"] },
+  { key: "location", title: "Your Location", desc: "State, district, and communications help map local benefits.", fields: ["state", "district", "language"] },
 ];
 
 const FIELD_MAP = {
   age: { label: "Age", type: "number", placeholder: "Enter your age (e.g. 34)", min: 1, max: 120, help: "Used to determine school-age scholarships and senior pension programs." },
   gender: { label: "Gender", type: "select", options: ["Female", "Male", "Other / prefer not to say"], help: "Required for women-focused welfare schemes." },
+  disability: { label: "Person with Disability (PwD)", type: "select", options: ["Yes", "No"], help: "Required for disability welfare and support schemes." },
   occupation: {
     label: "Occupation",
     type: "select",
@@ -41,14 +42,26 @@ const FIELD_MAP = {
     help: "Matches state-level welfare programs."
   },
   district: { label: "District", type: "text", placeholder: "Enter your district (e.g. Varanasi)", help: "Used for municipal or local block-level grants." },
+  language: {
+    label: "Preferred Notification Language",
+    type: "select",
+    options: ["English", "Hindi", "Bengali", "Marathi", "Telugu", "Tamil", "Gujarati"],
+    help: "Language choice for notification reminders and checklists."
+  }
 };
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { profile, setProfile, setMatched } = useSchemeContext();
+  const { profile, setProfile, setMatched, user } = useSchemeContext();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login?redirect=/onboarding");
+    }
+  }, [user, navigate]);
 
   const total = STEPS.length;
   const current = STEPS[step];

@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useSchemeContext } from "../context/SchemeContext";
 import { ArrowRight, Lock, Mail, AlertCircle } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useSchemeContext();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const redirectPath = searchParams.get("redirect") || "/dashboard";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +23,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/dashboard");
+      navigate(redirectPath);
     } catch (err) {
       setError(err.message || "Invalid email or password.");
     } finally {
@@ -90,7 +93,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-xs font-bold text-slate-400">
           New to YojanaSetu?{" "}
-          <Link to="/register" className="text-primary hover:underline font-extrabold">
+          <Link to={`/register?redirect=${encodeURIComponent(redirectPath)}`} className="text-primary hover:underline font-extrabold">
             Create an account
           </Link>
         </p>

@@ -34,6 +34,7 @@ function all(sql, params = []) {
 }
 
 // Initialise and seed database structure
+// Initialise and seed database structure
 async function initDb() {
   // 1. Create tables
   await run(`
@@ -42,6 +43,7 @@ async function initDb() {
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       name TEXT NOT NULL,
+      role TEXT DEFAULT 'user',
       profile TEXT DEFAULT '{}'
     )
   `);
@@ -58,7 +60,13 @@ async function initDb() {
       deadline TEXT NOT NULL,
       eligibility TEXT NOT NULL, -- JSON array of strings
       documents TEXT NOT NULL, -- JSON array of strings
-      steps TEXT NOT NULL -- JSON array of strings
+      steps TEXT NOT NULL, -- JSON array of strings
+      state TEXT NOT NULL DEFAULT 'Central',
+      income_limit INTEGER DEFAULT 0,
+      age_limit INTEGER DEFAULT 0,
+      official_link TEXT,
+      last_updated TEXT,
+      status TEXT DEFAULT 'active'
     )
   `);
 
@@ -72,6 +80,29 @@ async function initDb() {
     )
   `);
 
+  // Run migrations in case database already exists
+  try {
+    await run("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'");
+  } catch (e) {}
+  try {
+    await run("ALTER TABLE schemes ADD COLUMN state TEXT NOT NULL DEFAULT 'Central'");
+  } catch (e) {}
+  try {
+    await run("ALTER TABLE schemes ADD COLUMN income_limit INTEGER DEFAULT 0");
+  } catch (e) {}
+  try {
+    await run("ALTER TABLE schemes ADD COLUMN age_limit INTEGER DEFAULT 0");
+  } catch (e) {}
+  try {
+    await run("ALTER TABLE schemes ADD COLUMN official_link TEXT");
+  } catch (e) {}
+  try {
+    await run("ALTER TABLE schemes ADD COLUMN last_updated TEXT");
+  } catch (e) {}
+  try {
+    await run("ALTER TABLE schemes ADD COLUMN status TEXT DEFAULT 'active'");
+  } catch (e) {}
+
   // 2. Check if schemes table is empty, and seed if so
   const countRow = await get("SELECT COUNT(*) as count FROM schemes");
   if (countRow.count === 0) {
@@ -79,8 +110,8 @@ async function initDb() {
     const { SCHEMES } = require("./data/schemes");
     for (const s of SCHEMES) {
       await run(
-        `INSERT INTO schemes (id, name, dept, category, tagline, baseMatch, benefit, deadline, eligibility, documents, steps)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT OR REPLACE INTO schemes (id, name, dept, category, tagline, baseMatch, benefit, deadline, eligibility, documents, steps, state, income_limit, age_limit, official_link, last_updated, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           s.id,
           s.name,
@@ -92,7 +123,13 @@ async function initDb() {
           s.deadline,
           JSON.stringify(s.eligibility),
           JSON.stringify(s.documents),
-          JSON.stringify(s.steps)
+          JSON.stringify(s.steps),
+          s.state || "Central",
+          s.income_limit || 0,
+          s.age_limit || 0,
+          s.official_link || "",
+          s.last_updated || "",
+          s.status || "active"
         ]
       );
     }

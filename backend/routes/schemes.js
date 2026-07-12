@@ -6,11 +6,18 @@ const router = express.Router();
 
 // GET /api/schemes - list all schemes (optionally filter by category)
 router.get("/", async (req, res) => {
-  const { category } = req.query;
+  const { category, includePending } = req.query;
   try {
-    const rows = category && category !== "all"
-      ? await all("SELECT * FROM schemes WHERE category = ?", [category])
-      : await all("SELECT * FROM schemes");
+    let rows;
+    if (category && category !== "all") {
+      rows = includePending === "true"
+        ? await all("SELECT * FROM schemes WHERE category = ?", [category])
+        : await all("SELECT * FROM schemes WHERE category = ? AND status = 'active'", [category]);
+    } else {
+      rows = includePending === "true"
+        ? await all("SELECT * FROM schemes")
+        : await all("SELECT * FROM schemes WHERE status = 'active'");
+    }
 
     const parsed = rows.map((r) => ({
       ...r,
@@ -57,6 +64,7 @@ function computeMatch(profile, scheme) {
   const education = (profile.education || "").toLowerCase();
   const gender = (profile.gender || "").toLowerCase();
   const category = (profile.category || "").toLowerCase();
+  const disability = (profile.disability || "").toLowerCase();
 
   const lowIncome = income.includes("Below") || income.includes("1,00,000") || income.includes("2,50,000");
 
@@ -71,6 +79,8 @@ function computeMatch(profile, scheme) {
   if (scheme.category === "women" && gender === "female") score += 8;
 
   if (scheme.category === "health" && lowIncome) score += 5;
+  
+  if (scheme.category === "disability" && disability === "yes") score += 20;
 
   return Math.max(20, Math.min(99, Math.round(score)));
 }
@@ -79,7 +89,7 @@ function computeMatch(profile, scheme) {
 router.post("/match", express.json(), async (req, res) => {
   const profile = req.body || {};
   try {
-    const rows = await all("SELECT * FROM schemes");
+    const rows = await all("SELECT * FROM schemes WHERE status = 'active'");
     const parsed = rows.map((r) => ({
       ...r,
       eligibility: JSON.parse(r.eligibility || "[]"),
@@ -124,14 +134,51 @@ router.post("/assistant", express.json(), async (req, res) => {
   }
 });
 
-// GET /api/schemes/crawler/trigger - Crawler check
-router.get("/crawler/trigger", async (req, res) => {
-  const { scrapeAndExtract } = require("../utils/crawlers");
+// PUT /api/schemes/:id/verify - Approve a pending scheme
+router.put("/:id/verify", express.json(), async (req, res) => {
   try {
-    const saved = await scrapeAndExtract();
-    res.json({ status: "ok", added: saved });
+    const { status } = req.body;
+    await run(
+      "UPDATE schemes SET status = ?, last_updated = ? WHERE id = ?",
+      [status || "active", new Date().toISOString().split("T")[0], req.params.id]
+    );
+    res.json({ status: "ok" });
   } catch (err) {
-    res.status(500).json({ error: "Failed to run scraper crawler check." });
+    res.status(500).json({ error: "Failed to verify scheme." });
+  }
+});
+
+// POST /api/schemes - Create a new scheme manually (Admin CMS)
+router.post("/", express.json(), async (req, res) => {
+  const s = req.body || {};
+  if (!s.id || !s.name || !s.dept || !s.category || !s.benefit || !s.deadline) {
+    return res.status(400).json({ error: "Missing required scheme properties." });
+  }
+  try {
+    await run(
+      `INSERT OR REPLACE INTO schemes (id, name, dept, category, tagline, baseMatch, benefit, deadline, eligibility, documents, steps, state, official_link, last_updated, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        s.id,
+        s.name,
+        s.dept,
+        s.category,
+        s.tagline || "",
+        s.baseMatch || 70,
+        s.benefit,
+        s.deadline,
+        JSON.stringify(s.eligibility || []),
+        JSON.stringify(s.documents || []),
+        JSON.stringify(s.steps || []),
+        s.state || "Central",
+        s.official_link || "",
+        new Date().toISOString().split("T")[0],
+        s.status || "active"
+      ]
+    );
+    res.status(201).json({ status: "ok", scheme: s });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create scheme." });
   }
 });
 

@@ -32,6 +32,12 @@ const SCHEMES = [
       "Submit for verification by the local revenue officer",
       "Receive instalments directly in your linked bank account",
     ],
+    state: "Central",
+    income_limit: 0,
+    age_limit: 18,
+    official_link: "https://pmkisan.gov.in",
+    last_updated: "2026-07-01",
+    status: "active"
   },
   {
     id: "nsp-scholarship",
@@ -55,6 +61,12 @@ const SCHEMES = [
       "Get institution verification",
       "Track disbursal status on your dashboard",
     ],
+    state: "Central",
+    income_limit: 250000,
+    age_limit: 30,
+    official_link: "https://scholarships.gov.in",
+    last_updated: "2026-07-05",
+    status: "active"
   },
   {
     id: "ayushman-bharat",
@@ -77,6 +89,12 @@ const SCHEMES = [
       "Visit any empanelled hospital and show the card",
       "Cashless treatment is settled directly with the hospital",
     ],
+    state: "Central",
+    income_limit: 250000,
+    age_limit: 0,
+    official_link: "https://pmjay.gov.in",
+    last_updated: "2026-06-25",
+    status: "active"
   },
   {
     id: "stand-up-india",
@@ -100,6 +118,12 @@ const SCHEMES = [
       "Loan appraisal and sanction",
       "Disbursal and mandatory handholding support",
     ],
+    state: "Central",
+    income_limit: 0,
+    age_limit: 18,
+    official_link: "https://www.standupmitra.in",
+    last_updated: "2026-06-30",
+    status: "active"
   },
   {
     id: "sukanya-samriddhi",
@@ -122,6 +146,12 @@ const SCHEMES = [
       "Deposit any amount up to ₹1,50,000 per year",
       "Account matures 21 years from opening",
     ],
+    state: "Central",
+    income_limit: 0,
+    age_limit: 10,
+    official_link: "https://www.indiapost.gov.in",
+    last_updated: "2026-07-08",
+    status: "active"
   },
   {
     id: "ujjwala",
@@ -144,6 +174,12 @@ const SCHEMES = [
       "Verification by the distributor",
       "Connection released to your address",
     ],
+    state: "Central",
+    income_limit: 150000,
+    age_limit: 18,
+    official_link: "https://www.pmuy.gov.in",
+    last_updated: "2026-07-02",
+    status: "active"
   },
 ];
 

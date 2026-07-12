@@ -5,7 +5,7 @@ import SchemeCard from "../components/SchemeCard";
 import { LoadingState, ErrorState, EmptySearchState, CardSkeleton } from "../components/StatusStates";
 import { useSchemeContext } from "../context/SchemeContext";
 import { getSchemes } from "../api";
-import { Search, ArrowUpDown, SlidersHorizontal, Layers, CheckCircle2, RotateCcw } from "lucide-react";
+import { Mic, MicOff, Search, ArrowUpDown, SlidersHorizontal, Layers, CheckCircle2, RotateCcw } from "lucide-react";
 
 export default function Results() {
   const { categories, matched } = useSchemeContext();
@@ -18,6 +18,69 @@ export default function Results() {
   const [searchTerm, setSearchTerm] = useState(urlSearch);
   const [sortBy, setSortBy] = useState("match"); // "match" | "name"
   const [selectedDept, setSelectedDept] = useState("all");
+
+  const [isListening, setIsListening] = useState(false);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("yojanasetu_recent_searches")) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  const trendingSearches = ["PM-KISAN", "Scholarships", "Ayushman Bharat", "Mudra", "Solar pump"];
+
+  const handleVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please try Chrome, Edge, or Safari.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event) => {
+      const speechToText = event.results[0][0].transcript;
+      handleSearchChange(speechToText);
+      saveRecentSearch(speechToText);
+    };
+
+    recognition.start();
+  };
+
+  const saveRecentSearch = (term) => {
+    if (!term.trim()) return;
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((x) => x !== term);
+      const next = [term, ...filtered].slice(0, 5);
+      localStorage.setItem("yojanasetu_recent_searches", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const autocompleteResults = useMemo(() => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return [];
+    return schemes
+      .filter((s) => s.name.toLowerCase().includes(term))
+      .slice(0, 5);
+  }, [searchTerm, schemes]);
 
   const load = () => {
     setStatus("loading");
@@ -129,7 +192,7 @@ export default function Results() {
             </h3>
 
             {/* Local Search input */}
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <label className="text-xs font-bold text-slate-400">Keyword Search</label>
               <div className="relative">
                 <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sub" />
@@ -137,14 +200,109 @@ export default function Results() {
                   type="text"
                   placeholder="Scholarships, Loans..."
                   value={searchTerm}
+                  onFocus={() => setShowAutocomplete(true)}
+                  onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 text-xs font-bold border border-line/80 rounded-xl bg-white text-ink outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-slate-400"
+                  className="w-full pl-9 pr-10 py-2.5 text-xs font-bold border border-line/80 rounded-xl bg-white text-ink outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-slate-400"
                 />
+                
+                {/* Voice search button */}
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 transition-colors ${
+                    isListening ? "bg-red-500 text-white animate-pulse" : "text-primary hover:bg-slate-100"
+                  }`}
+                  aria-label="Voice search"
+                >
+                  {isListening ? <MicOff size={14} /> : <Mic size={14} />}
+                </button>
+              </div>
+
+              {/* Pulsating Voice Visualiser Banner */}
+              {isListening && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 flex items-center gap-2 rounded-xl bg-red-50 border border-red-100 p-2.5"
+                >
+                  <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                  <span className="text-[10px] font-bold text-red-600">Listening to microphone...</span>
+                </motion.div>
+              )}
+
+              {/* Autocomplete Dropdown popup */}
+              {showAutocomplete && autocompleteResults.length > 0 && (
+                <ul className="absolute z-20 left-0 right-0 mt-1 bg-white border border-line rounded-xl shadow-xl p-1.5 space-y-0.5">
+                  {autocompleteResults.map((item) => (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onMouseDown={() => {
+                          handleSearchChange(item.name);
+                          saveRecentSearch(item.name);
+                        }}
+                        className="w-full text-left rounded-lg px-3 py-2 text-xs font-bold text-ink hover:bg-slate-50 transition-colors truncate"
+                      >
+                        {item.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Trending & Recent Searches */}
+            <div className="space-y-3 pt-1 border-t border-slate-100/50">
+              {recentSearches.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Recents</span>
+                    <button 
+                      onClick={() => {
+                        setRecentSearches([]);
+                        localStorage.removeItem("yojanasetu_recent_searches");
+                      }}
+                      className="text-[9px] font-bold text-slate-400 hover:text-danger"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {recentSearches.map((s, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSearchChange(s)}
+                        className="rounded-lg bg-slate-50 hover:bg-slate-100 border border-line/60 px-2 py-1 text-[10px] font-bold text-sub transition-all"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Trending</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {trendingSearches.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => {
+                        handleSearchChange(s);
+                        saveRecentSearch(s);
+                      }}
+                      className="rounded-lg bg-primaryTint/55 hover:bg-primaryTint border border-primary/5 px-2 py-1 text-[10px] font-bold text-primary transition-all"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Sort Options */}
-            <div className="space-y-2">
+            <div className="space-y-2 pt-1 border-t border-slate-100/50">
               <label className="text-xs font-bold text-slate-400">Order By</label>
               <div className="relative">
                 <ArrowUpDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-sub pointer-events-none" />

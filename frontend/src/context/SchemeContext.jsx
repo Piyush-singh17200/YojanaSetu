@@ -42,6 +42,20 @@ export function SchemeProvider({ children }) {
   });
   const [matched, setMatched] = useState(null); // null until onboarding runs a match
   const [categories, setCategories] = useState([]);
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: "Welcome to YojanaSetu! Check matches to start scanning benefits.", time: "Just now", unread: true }
+  ]);
+
+  const addNotification = useCallback((text) => {
+    setNotifications((prev) => [
+      { id: Date.now(), text, time: "Just now", unread: true },
+      ...prev
+    ]);
+  }, []);
+
+  const markAllNotificationsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  }, []);
 
   useEffect(() => {
     getCategories()
@@ -94,10 +108,10 @@ export function SchemeProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const data = await loginUser(email, password);
     setTokenState(data.token);
-    setUser({ name: data.name, email: data.email });
+    setUser({ name: data.name, email: data.email, role: data.role });
     setProfileState(data.profile || {});
     localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.setItem(USER_KEY, JSON.stringify({ name: data.name, email: data.email }));
+    localStorage.setItem(USER_KEY, JSON.stringify({ name: data.name, email: data.email, role: data.role }));
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile || {}));
     return data;
   }, []);
@@ -105,10 +119,10 @@ export function SchemeProvider({ children }) {
   const register = useCallback(async (email, password, name) => {
     const data = await registerUser(email, password, name);
     setTokenState(data.token);
-    setUser({ name, email });
+    setUser({ name, email, role: data.role });
     setProfileState(data.profile || {});
     localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.setItem(USER_KEY, JSON.stringify({ name, email }));
+    localStorage.setItem(USER_KEY, JSON.stringify({ name, email, role: data.role }));
     localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile || {}));
     return data;
   }, []);
@@ -139,7 +153,10 @@ export function SchemeProvider({ children }) {
         user,
         login,
         register,
-        logout
+        logout,
+        notifications,
+        addNotification,
+        markAllNotificationsRead
       }}
     >
       {children}

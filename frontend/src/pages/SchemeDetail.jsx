@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -17,7 +17,7 @@ import Badge from "../components/Badge";
 import ScoreRing from "../components/ScoreRing";
 import { LoadingState, ErrorState, DetailSkeleton } from "../components/StatusStates";
 import { useSchemeContext } from "../context/SchemeContext";
-import { getScheme } from "../api";
+import { getScheme, getSchemes } from "../api";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -29,11 +29,12 @@ const TABS = [
 export default function SchemeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { categories, saved, toggleSave } = useSchemeContext();
+  const { categories, saved, toggleSave, addNotification } = useSchemeContext();
   const [tab, setTab] = useState("overview");
   const [scheme, setScheme] = useState(null);
   const [status, setStatus] = useState("loading");
   const [shared, setShared] = useState(false);
+  const [related, setRelated] = useState([]);
 
   const load = () => {
     setStatus("loading");
@@ -46,6 +47,68 @@ export default function SchemeDetail() {
   };
 
   useEffect(load, [id]);
+
+  useEffect(() => {
+    if (scheme) {
+      getSchemes(scheme.category)
+        .then((data) => {
+          setRelated(data.filter((s) => s.id !== scheme.id).slice(0, 2));
+        })
+        .catch(() => setRelated([]));
+    }
+  }, [scheme]);
+
+  useEffect(() => {
+    if (scheme) {
+      try {
+        const viewed = JSON.parse(localStorage.getItem("yojanasetu_recently_viewed")) || [];
+        const filtered = viewed.filter((x) => x !== scheme.id);
+        const next = [scheme.id, ...filtered].slice(0, 4);
+        localStorage.setItem("yojanasetu_recently_viewed", JSON.stringify(next));
+      } catch (e) {
+        console.warn("View history logging failed:", e);
+      }
+    }
+  }, [scheme]);
+
+  const handleDownloadSummary = () => {
+    if (!scheme) return;
+    const documentLines = scheme.documents.map((d) => `- [ ] ${d}`).join("\n");
+    const stepsLines = scheme.steps.map((s, i) => `${i + 1}. ${s}`).join("\n");
+    const eligibilityLines = scheme.eligibility.map((e) => `- ${e}`).join("\n");
+
+    const textContent = `=========================================
+YOJANASETU VERIFIED SCHEME DOCUMENT CHECKLIST
+=========================================
+Scheme Name: ${scheme.name}
+Ministry/Dept: ${scheme.dept}
+Primary Benefit: ${scheme.benefit}
+Application Deadline: ${scheme.deadline}
+Official Site: ${scheme.official_link || "Central Portal"}
+=========================================
+
+ELIGIBILITY REQUIREMENTS:
+${eligibilityLines}
+
+REQUIRED DOCUMENTS CHECKLIST:
+${documentLines}
+
+APPLICATION STEPS:
+${stepsLines}
+
+=========================================
+Disclaimers: Always verify application criteria on the official portal before submissions. YojanaSetu is a free public assistance system.
+`;
+
+    const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${scheme.id}-checklist-yojanasetu.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (status === "loading") {
     return (
@@ -79,7 +142,9 @@ export default function SchemeDetail() {
   };
 
   const handlePortalRedirect = () => {
-    alert(`Redirecting you to the official Ministry portal for ${scheme.name}. Always ensure you submit applications through official govt.in domains.`);
+    const linkUrl = scheme.official_link || "https://www.india.gov.in";
+    addNotification(`Redirected to official portal for: ${scheme.name}. Submit application using your checklist!`);
+    window.open(linkUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -154,6 +219,15 @@ export default function SchemeDetail() {
               {shared ? "Copied" : "Share Link"}
             </button>
           </div>
+
+          {/* Download Checklist button */}
+          <button 
+            onClick={handleDownloadSummary}
+            className="flex items-center gap-1.5 rounded-2xl border border-line bg-white hover:border-slate-300 hover:bg-slate-50 hover:text-ink px-4 py-2.5 text-xs font-bold text-sub transition-all active:scale-95 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            <FileText size={15} /> 
+            Download Checklist
+          </button>
 
           {/* Print Checklist button */}
           <button 
@@ -267,6 +341,38 @@ export default function SchemeDetail() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Related Schemes */}
+      {related.length > 0 && (
+        <div className="mt-12 no-print">
+          <h3 className="text-lg font-black text-ink mb-4">Related Welfare Schemes</h3>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {related.map((rel) => (
+              <Link
+                key={rel.id}
+                to={`/schemes/${rel.id}`}
+                className="group flex flex-col justify-between rounded-3xl border border-line bg-white p-5 shadow-sm hover:border-primary/20 hover:shadow-md transition-all"
+              >
+                <div>
+                  <h4 className="text-sm font-extrabold text-ink group-hover:text-primary transition-colors leading-snug">
+                    {rel.name}
+                  </h4>
+                  <p className="mt-1 text-[11px] text-slate-400 font-bold">{rel.dept}</p>
+                  <p className="mt-2 text-xs text-sub line-clamp-2 leading-relaxed">{rel.tagline}</p>
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-slate-50 pt-3">
+                  <span className="text-[10px] font-extrabold text-success bg-success/5 px-2 py-1 rounded-lg">
+                    {rel.benefit}
+                  </span>
+                  <span className="text-[10px] font-extrabold text-primary flex items-center gap-1">
+                    Details →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

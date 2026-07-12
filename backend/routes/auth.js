@@ -20,13 +20,14 @@ router.post("/register", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const role = email.toLowerCase() === "admin@yojanasetu.gov.in" ? "admin" : "user";
     const result = await run(
-      "INSERT INTO users (email, password, name) VALUES (?, ?, ?)",
-      [email, hashedPassword, name]
+      "INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)",
+      [email, hashedPassword, name, role]
     );
 
-    const token = jwt.sign({ id: result.id, email }, JWT_SECRET, { expiresIn: "7d" });
-    res.status(201).json({ token, name, email, profile: {} });
+    const token = jwt.sign({ id: result.id, email, role }, JWT_SECRET, { expiresIn: "7d" });
+    res.status(201).json({ token, name, email, role, profile: {} });
   } catch (err) {
     res.status(500).json({ error: "Database error during registration." });
   }
@@ -50,11 +51,12 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password credentials." });
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
     res.json({
       token,
       name: user.name,
       email: user.email,
+      role: user.role,
       profile: JSON.parse(user.profile || "{}")
     });
   } catch (err) {
@@ -65,13 +67,14 @@ router.post("/login", async (req, res) => {
 // 3. Get User Profile
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const user = await get("SELECT name, email, profile FROM users WHERE id = ?", [req.user.id]);
+    const user = await get("SELECT name, email, role, profile FROM users WHERE id = ?", [req.user.id]);
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
     res.json({
       name: user.name,
       email: user.email,
+      role: user.role,
       profile: JSON.parse(user.profile || "{}")
     });
   } catch (err) {

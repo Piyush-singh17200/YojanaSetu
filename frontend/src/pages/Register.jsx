@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useSchemeContext } from "../context/SchemeContext";
 import { ArrowRight, Lock, Mail, User, AlertCircle } from "lucide-react";
 
 export default function Register() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { register } = useSchemeContext();
   
   const [name, setName] = useState("");
@@ -12,6 +13,8 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const redirectPath = searchParams.get("redirect") || "/dashboard";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +24,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(email, password, name);
-      navigate("/dashboard");
+      navigate(redirectPath);
     } catch (err) {
       setError(err.message || "Failed to create account.");
     } finally {
@@ -107,7 +110,7 @@ export default function Register() {
 
         <p className="mt-6 text-center text-xs font-bold text-slate-400">
           Already have an account?{" "}
-          <Link to="/login" className="text-primary hover:underline font-extrabold">
+          <Link to={`/login?redirect=${encodeURIComponent(redirectPath)}`} className="text-primary hover:underline font-extrabold">
             Log In
           </Link>
         </p>

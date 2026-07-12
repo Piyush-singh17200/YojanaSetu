@@ -53,16 +53,10 @@ const LANGUAGES = [
   { code: "sat", label: "Santhali", native: "संताली" }
 ];
 
-const NOTIFICATIONS = [
-  { id: 1, text: "New scheme matched: PM-KISAN (Saffron Category)", time: "2 hours ago", unread: true },
-  { id: 2, text: "Document submission deadline tomorrow: NSP Scholarship", time: "1 day ago", unread: true },
-  { id: 3, text: "Profile completeness is now 85%", time: "3 days ago", unread: false },
-];
-
 export default function TopNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useSchemeContext();
+  const { user, logout, notifications, markAllNotificationsRead } = useSchemeContext();
   
   const [open, setOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -164,7 +158,10 @@ export default function TopNav() {
         
         {/* Desktop Navigation Links */}
         <nav className="hidden items-center gap-1.5 md:flex" aria-label="Main Navigation">
-          {ITEMS.map((it) => (
+          {[
+            ...ITEMS,
+            ...(user?.role === "admin" ? [{ to: "/admin", label: "Admin Panel", icon: Settings }] : [])
+          ].map((it) => (
             <Link
               key={it.to}
               to={it.to}
@@ -233,7 +230,7 @@ export default function TopNav() {
               aria-haspopup="true"
             >
               <Bell size={18} />
-              {NOTIFICATIONS.some(n => n.unread) && (
+              {notifications.some(n => n.unread) && (
                 <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-secondary" />
               )}
             </button>
@@ -249,10 +246,10 @@ export default function TopNav() {
                 >
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
                     <span className="text-xs font-extrabold text-ink">Notifications</span>
-                    <button className="text-[10px] font-bold text-primary hover:underline">Mark all read</button>
+                    <button onClick={markAllNotificationsRead} className="text-[10px] font-bold text-primary hover:underline">Mark all read</button>
                   </div>
-                  <div className="space-y-2">
-                    {NOTIFICATIONS.map((n) => (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {notifications.map((n) => (
                       <div 
                         key={n.id} 
                         className={`rounded-2xl p-2.5 transition-colors cursor-pointer hover:bg-slate-50 ${n.unread ? "bg-slate-50/50" : ""}`}
@@ -302,6 +299,14 @@ export default function TopNav() {
                       <p className="text-[10px] font-semibold text-sub mt-0.5 truncate">{user.email}</p>
                     </div>
                     <div className="p-1">
+                      {user?.role === "admin" && (
+                        <button
+                          onClick={() => { navigate("/admin"); setShowProfile(false); }}
+                          className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 transition-colors border-b border-slate-50 pb-2 mb-1"
+                        >
+                          <Settings size={14} /> Admin Portal
+                        </button>
+                      )}
                       <button
                         onClick={() => { navigate("/dashboard"); setShowProfile(false); }}
                         className="flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-xs font-bold text-sub hover:bg-slate-50 hover:text-ink transition-colors"
@@ -371,7 +376,10 @@ export default function TopNav() {
             className="overflow-hidden border-t border-line/60 bg-white md:hidden shadow-lg"
           >
             <nav className="flex flex-col gap-1 px-6 py-4" aria-label="Mobile Navigation">
-              {ITEMS.map((it) => (
+              {[
+                ...ITEMS,
+                ...(user?.role === "admin" ? [{ to: "/admin", label: "Admin Panel", icon: Settings }] : [])
+              ].map((it) => (
                 <Link
                   key={it.to}
                   to={it.to}
