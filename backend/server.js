@@ -10,7 +10,8 @@ const PORT = process.env.PORT || 5000;
 
 // Allow local dev and Vercel domains
 const allowedOrigins = [
-  "http://localhost:5173",
+  "http://localhost:5173", // vite dev server
+  "http://localhost:4173", // vite preview server (npm run preview)
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 

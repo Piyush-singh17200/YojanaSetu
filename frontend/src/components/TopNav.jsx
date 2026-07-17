@@ -165,7 +165,7 @@ export default function TopNav() {
             <Link
               key={it.to}
               to={it.to}
-              className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs lg:text-sm font-bold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+              className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs lg:text-sm font-bold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
                 isActive(it.to) 
                   ? "bg-primary/5 text-primary" 
                   : "text-sub hover:text-ink hover:bg-slate-100/70"

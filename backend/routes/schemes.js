@@ -1,8 +1,17 @@
 const express = require("express");
-const { all, get } = require("../db");
+const { all, get, run } = require("../db");
 const { CATEGORIES } = require("../data/schemes");
+const { authMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
+
+// Only logged-in admins may create, verify, or trigger crawler actions.
+function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ error: "Admin access required." });
+  }
+  next();
+}
 
 // GET /api/schemes - list all schemes (optionally filter by category)
 router.get("/", async (req, res) => {
@@ -134,8 +143,8 @@ router.post("/assistant", express.json(), async (req, res) => {
   }
 });
 
-// PUT /api/schemes/:id/verify - Approve a pending scheme
-router.put("/:id/verify", express.json(), async (req, res) => {
+// PUT /api/schemes/:id/verify - Approve a pending scheme (admin only)
+router.put("/:id/verify", authMiddleware, requireAdmin, express.json(), async (req, res) => {
   try {
     const { status } = req.body;
     await run(
@@ -148,8 +157,8 @@ router.put("/:id/verify", express.json(), async (req, res) => {
   }
 });
 
-// POST /api/schemes - Create a new scheme manually (Admin CMS)
-router.post("/", express.json(), async (req, res) => {
+// POST /api/schemes - Create a new scheme manually (Admin CMS, admin only)
+router.post("/", authMiddleware, requireAdmin, express.json(), async (req, res) => {
   const s = req.body || {};
   if (!s.id || !s.name || !s.dept || !s.category || !s.benefit || !s.deadline) {
     return res.status(400).json({ error: "Missing required scheme properties." });
@@ -179,6 +188,17 @@ router.post("/", express.json(), async (req, res) => {
     res.status(201).json({ status: "ok", scheme: s });
   } catch (err) {
     res.status(500).json({ error: "Failed to create scheme." });
+  }
+});
+
+// GET /api/schemes/crawler/trigger - manually run the scheme crawler (admin only)
+router.get("/crawler/trigger", authMiddleware, requireAdmin, async (req, res) => {
+  try {
+    const { scrapeAndExtract } = require("../utils/crawlers");
+    const result = await scrapeAndExtract();
+    res.json({ status: "ok", found: result.length, schemes: result });
+  } catch (err) {
+    res.status(500).json({ error: "Crawler run failed.", detail: err.message });
   }
 });
 
